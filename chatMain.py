@@ -267,6 +267,8 @@ class gpt():
         #CHAT GPT 함수 실행
         try:
             result = self.chat_gpt_content(prom=prompt,model=self.chatgpt_api_model)
+            ##성공시 로그 남기기
+            self.logging(prompt=prompt,result=result)
             data = json.loads(result)
             reason = data['reason']
             solution = data['solution']
@@ -310,6 +312,8 @@ class gpt():
         # CHAT GPT 함수 실행
         try:
             result = self.chat_gpt_content(prom=prompt, model=self.chatgpt_api_model)
+            ##성공시 로그 남기기
+            self.logging(prompt=prompt, result=result)
             ui.plainTextEdit_query_2.clear()
             ui.plainTextEdit_query_2.appendPlainText(result)
         except Exception as e:
@@ -374,6 +378,8 @@ class gpt():
         try:
             result = self.chat_gpt_content(prom=prompt, model=self.chatgpt_api_model)
             print(result)
+            ##성공시 로그 남기기
+            self.logging(prompt=prompt, result=result)
             ui.plainTextEdit_func_sol.clear()
             ui.plainTextEdit_func_sol.appendPlainText(result)
         except Exception as e:
@@ -427,8 +433,12 @@ class gpt():
             # 테이블 크기에 따라 셀 크기 조절
             ui.tableWidget_queryadv_result.resizeColumnsToContents()
             ui.tableWidget_queryadv_result.resizeRowsToContents()
-    def logging(self, text):
-        ui.plainTextEdit_log.appendPlainText(text)
+    #로그 남기기
+    def logging(self, prompt,result):
+        connection = self.dbConnect()
+        self.dbInsert(
+            query=f"INSERT INTO T_CHATGPT_USE(USER_ID,PROMPT,RESULT) VALUES('{self.current_user}','{prompt}','{result}')"
+            , connection=connection)
 
 if __name__ == "__main__":
     import sys
