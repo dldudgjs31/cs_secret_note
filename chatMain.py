@@ -15,6 +15,7 @@ class gpt():
     id_use_yn = True
     # 현재 로그인 중인 계정
     current_user = ''
+    authKey = ''
 
     # db 공통 connection 연결
     def dbConnect(self):
@@ -79,7 +80,7 @@ class gpt():
         id = ui.lineEdit_sign_id.text()
         pwd = ui.lineEdit_sign_pwd.text()
         email = ui.lineEdit_sign_email.text() + "@knou.ac.kr"
-        authKey = ui.lineEdit_sign_email_key.text()
+        self.authKey = ui.lineEdit_sign_email_key.text()
 
         if pwd == '':
             msgBox = QMessageBox()
