@@ -5,7 +5,11 @@ import openai
 from PyQt6.QtWidgets import QPushButton, QMessageBox, QRadioButton, QTableWidgetItem
 import pymysql
 import json
-import emailAuth
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import string
+import random
 
 class gpt():
     #전역 변수 : API KEY / MODEL 유형
@@ -127,21 +131,62 @@ class gpt():
             msgBox.exec()
             ui.stackedWidget_main.setCurrentIndex(0);
     #이메일 인증
+    def generate_random_string(self,length):
+        return ''.join(str(random.randrange(0, 9)) for _ in range(length))
+    def send_email(self,recipient, subject, message):
+        print(recipient)
+        print(subject)
+        print(message)
+        smtp_server = 'smtp.naver.com'  # 사용하는 메일 서비스에 따라 변경할 수 있습니다.
+        smtp_port = 587
+        sender_email = 'dldudgjs31@naver.com'  # 본인의 이메일 주소로 변경하세요.
+        sender_password = 'qwqw1004[]'  # 본인의 이메일 비밀번호로 변경하세요.
+        recipient = recipient+'@knou.ac.kr'
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = recipient
+        msg['Subject'] = subject
+        msg.attach(MIMEText(message, 'plain', 'utf-8'))
+        try:
+            server = smtplib.SMTP(smtp_server, smtp_port)
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, recipient, msg.as_string())
+            server.quit()
+            msgBox = QMessageBox()
+            msgBox.setText("이메일 인증 코드를 해당 이메일로 전송하였습니다.")
+            msgBox.exec()
+            print('이메일 인증 코드를 해당 이메일로 전송하였습니다.')
+        except Exception as e:
+            print("이메일 전송 중 오류가 발생했습니다:", e)
     def emailAuth(self):
-        if self.email == '':
+        email = ui.lineEdit_sign_email.text()
+        if ui.lineEdit_sign_email.text() == '':
+            msgBox = QMessageBox()
+            msgBox.setText("이메일 계정을 입력해주세요.")
+            msgBox.exec()
             print('이메일 계정을 입력해주세요.')
             return
-
-        self.verification_code = emailAuth.generate_random_string(6)
-        emailAuth.send_email(self.email, '[verification]한국방송통신대학교 이메일 인증코드',
-                   f'한국방송통신대학교 학생인지 인증을 위한 이메일입니다.\n당신의 이메일 인증 코드는 다음과 같습니다 : {self.verification_code}')
+        try:
+            self.verification_code = self.generate_random_string(6)
+            self.send_email(recipient=email, subject='[verification]한국방송통신대학교 이메일 인증코드',
+                   message=f'한국방송통신대학교 학생인지 인증을 위한 이메일입니다.\n당신의 이메일 인증 코드는 다음과 같습니다 : {self.verification_code}')
+        except Exception as e:
+            print(e)
     def confirmEmailAuth(self):
-        input_code = input('이메일 인증 코드를 입력해주세요 : ')
+        input_code = ui.lineEdit_sign_email_key.text()
         if input_code == self.verification_code:
+            msgBox = QMessageBox()
+            msgBox.setText("이메일 인증에 성공하였습니다.")
+            msgBox.exec()
+            ui.label_auth_chk.setText('인증성공')
             print('이메일 인증에 성공하였습니다.')
         else:
+            msgBox = QMessageBox()
+            msgBox.setText("이메일 인증에 실패하였습니다.")
+            msgBox.exec()
+            ui.label_auth_chk.setText('인증실패')
             print('이메일 인증에 실패하였습니다.')
-
     # 로그인 진행
     def login(self):
         id = ui.lineEdit_id.text()
@@ -456,6 +501,8 @@ if __name__ == "__main__":
     ui.pushButton_chk_btn.clicked.connect(bot.checkId)
     ##회원가입 인증번호 발송
     ui.pushButton_auth_chk.clicked.connect(bot.emailAuth)
+    ##회원가입 인증번호 확인
+    ui.pushButton_auth_key_chk.clicked.connect(bot.confirmEmailAuth)
 
     ##회원가입 완료
     ui.pushButton_signup_comp.clicked.connect(bot.signup)
