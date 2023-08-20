@@ -5,6 +5,7 @@ import openai
 from PyQt6.QtWidgets import QPushButton, QMessageBox, QRadioButton, QTableWidgetItem
 import pymysql
 import json
+import emailAuth
 
 class gpt():
     #전역 변수 : API KEY / MODEL 유형
@@ -17,6 +18,7 @@ class gpt():
     current_user = ''
     email=''
     authKey = ''
+    verification_code = ''
 
     # db 공통 connection 연결
     def dbConnect(self):
@@ -124,6 +126,22 @@ class gpt():
             msgBox.setText("회원가입에 성공하였습니다.")
             msgBox.exec()
             ui.stackedWidget_main.setCurrentIndex(0);
+    #이메일 인증
+    def emailAuth(self):
+        if self.email == '':
+            print('이메일 계정을 입력해주세요.')
+            return
+
+        self.verification_code = emailAuth.generate_random_string(6)
+        emailAuth.send_email(self.email, '[verification]한국방송통신대학교 이메일 인증코드',
+                   f'한국방송통신대학교 학생인지 인증을 위한 이메일입니다.\n당신의 이메일 인증 코드는 다음과 같습니다 : {self.verification_code}')
+    def confirmEmailAuth(self):
+        input_code = input('이메일 인증 코드를 입력해주세요 : ')
+        if input_code == self.verification_code:
+            print('이메일 인증에 성공하였습니다.')
+        else:
+            print('이메일 인증에 실패하였습니다.')
+
     # 로그인 진행
     def login(self):
         id = ui.lineEdit_id.text()
@@ -427,6 +445,7 @@ if __name__ == "__main__":
     ##회원가입 아이디 체크
     ui.pushButton_chk_btn.clicked.connect(bot.checkId)
     ##회원가입 인증번호 발송
+    ui.pushButton_auth_chk.clicked.connect(bot.emailAuth)
 
     ##회원가입 완료
     ui.pushButton_signup_comp.clicked.connect(bot.signup)
