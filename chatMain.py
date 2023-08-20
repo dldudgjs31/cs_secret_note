@@ -15,6 +15,7 @@ class gpt():
     id_use_yn = True
     # 현재 로그인 중인 계정
     current_user = ''
+    email=''
     authKey = ''
 
     # db 공통 connection 연결
@@ -79,7 +80,7 @@ class gpt():
     def signup(self):
         id = ui.lineEdit_sign_id.text()
         pwd = ui.lineEdit_sign_pwd.text()
-        email = ui.lineEdit_sign_email.text() + "@knou.ac.kr"
+        self.email = ui.lineEdit_sign_email.text() + "@knou.ac.kr"
         self.authKey = ui.lineEdit_sign_email_key.text()
 
         if pwd == '':
@@ -87,7 +88,7 @@ class gpt():
             msgBox.setText("비밀번호를 입력해주세요.")
             msgBox.exec()
             return
-        elif email == '':
+        elif self.email == '':
             msgBox = QMessageBox()
             msgBox.setText("이메일을 입력해주세요.")
             msgBox.exec()
@@ -97,7 +98,7 @@ class gpt():
             msgBox.setText("아이디를 입력해주세요.")
             msgBox.exec()
             return
-        elif authKey == '':
+        elif self.authKey == '':
             msgBox = QMessageBox()
             msgBox.setText("인증번호을 입력해주세요.")
             msgBox.exec()
@@ -113,7 +114,7 @@ class gpt():
         # DB INSERT
         connection = self.dbConnect()
         self.dbInsert(
-            query=f"INSERT INTO T_CHATGPT_USER(USER_ID,USER_PWD,USER_EMAIL) VALUES('{id}','{pwd}','{email}')"
+            query=f"INSERT INTO T_CHATGPT_USER(USER_ID,USER_PWD,USER_EMAIL) VALUES('{id}','{pwd}','{self.email}')"
             ,connection=connection)
         # DB SELECT
         connection1 = self.dbConnect()
