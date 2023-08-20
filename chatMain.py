@@ -2,8 +2,9 @@ from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import *
 import chatgpt
 import openai
-from PyQt6.QtWidgets import QPushButton, QMessageBox, QRadioButton
+from PyQt6.QtWidgets import QPushButton, QMessageBox, QRadioButton, QTableWidgetItem
 import pymysql
+import json
 
 class gpt():
     #전역 변수 : API KEY / MODEL 유형
@@ -78,6 +79,8 @@ class gpt():
         id = ui.lineEdit_sign_id.text()
         pwd = ui.lineEdit_sign_pwd.text()
         email = ui.lineEdit_sign_email.text() + "@knou.ac.kr"
+        authKey = ui.lineEdit_sign_email_key.text()
+
         if pwd == '':
             msgBox = QMessageBox()
             msgBox.setText("비밀번호를 입력해주세요.")
@@ -91,6 +94,11 @@ class gpt():
         elif id == '' and self.id_use_yn == True:
             msgBox = QMessageBox()
             msgBox.setText("아이디를 입력해주세요.")
+            msgBox.exec()
+            return
+        elif authKey == '':
+            msgBox = QMessageBox()
+            msgBox.setText("인증번호을 입력해주세요.")
             msgBox.exec()
             return
         #아이디 중복 체크
@@ -233,16 +241,19 @@ class gpt():
             prgLanguage = ui.radioButton_err_sql.text()
 
         #prompt 설정
-        prompt = f"{prgLanguage}에서 발생한 에러 {err_code} 의 에러 원인과 해결 방안에 대해서 설명해줘."
+        prompt = f"{prgLanguage}에서 발생한 에러 {err_code} 의 에러 원인과 해결 방안에 대해서 설명. 대답은 json 타입으로 해주고 원인은 reason,해결방안은 solution 이름으로 줄바꿈없이 반환해줘."
         print(prompt)
 
         #CHAT GPT 함수 실행
-
         try:
             result = self.chat_gpt_content(prom=prompt,model=self.chatgpt_api_model)
-            print(result)
+            data = json.loads(result)
+            reason = data['reason']
+            solution = data['solution']
             ui.plainTextEdit_err_sol.clear()
-            ui.plainTextEdit_err_sol.appendPlainText(result)
+            ui.plainTextEdit_err_reason.clear()
+            ui.plainTextEdit_err_reason.appendPlainText(reason)
+            ui.plainTextEdit_err_sol.appendPlainText(solution)
         except Exception as e:
             print(e)
             ui.plainTextEdit_err_sol.clear()
@@ -279,7 +290,6 @@ class gpt():
         # CHAT GPT 함수 실행
         try:
             result = self.chat_gpt_content(prom=prompt, model=self.chatgpt_api_model)
-            print(result)
             ui.plainTextEdit_query_2.clear()
             ui.plainTextEdit_query_2.appendPlainText(result)
         except Exception as e:
@@ -350,6 +360,53 @@ class gpt():
             print(e)
             ui.plainTextEdit_func_sol.clear()
             ui.plainTextEdit_func_sol.appendPlainText(str(e))
+
+        def registerDB(self):
+            host = "my8002.gabiadb.com"
+            user = "amsdb"
+            password = "manager123!@"
+            database = "amsdb"
+            # self.db_host = ui.lineEdit_queryadv_hosturl
+            # self.db_user = ui.lineEdit_queryadv_user
+            # self.db_pwd = ui.lineEdit_queryadv_pwd
+            # self.db_database = ui.lineEdit_queryadv_database
+            connection = self.dbConnect()
+            # connection = self.dbConnect_queryadv(host=self.db_host,user=self.db_user,pwd=self.db_pwd,database=self.db_database)
+
+            result = self.dbSearch(
+                query=f"SELECT table_name,column_name, data_type FROM information_schema.`COLUMNS` WHERE TABLE_SCHEMA = 'amsdb' and (TABLE_NAME  ='a_class' or TABLE_NAME ='a_member')",
+                connection=connection
+            )
+            print(result)
+            prompt = f"mysql로된 db의 테이블이름,컬럼명, 데이터 타입을 정의한 정보는 {result}.이 정보를 토대로 클래스별 멤버 리스트를 뽑는 쿼리 작성해줘."
+            answer_learning = self.chat_gpt_content(prom=prompt, model=self.chatgpt_api_model)
+            answer_learning = str(answer_learning).replace(";", "")
+            print(answer_learning)
+            connection = self.dbConnect()
+            result = self.dbSearch(
+                query=answer_learning,
+                connection=connection
+            )
+            print(result)
+            prompt2 = f"위에 알려준 테이블 정보를 토대로 클래스별 학생 리스트를 뽑는 쿼리"
+            # answer_order = self.chat_gpt_content(prom=prompt2,model=self.chatgpt_api_model)
+            # print(answer_order)
+            # ui.tableWidget_queryadv_result.
+            data = result
+            ui.tableWidget_queryadv_result.setRowCount(len(data))
+            ui.tableWidget_queryadv_result.setColumnCount(2)  # 테이블은 3개의 열로 구성
+
+            for row_index, row_data in enumerate(data):
+                for col_index, cell_data in enumerate(row_data):
+                    item = QTableWidgetItem(str(cell_data))
+                    ui.tableWidget_queryadv_result.setItem(row_index, col_index, item)
+
+                    # 헤더 레이블 설정
+            ui.tableWidget_queryadv_result.setHorizontalHeaderLabels(["학생명", "클래스명"])
+
+            # 테이블 크기에 따라 셀 크기 조절
+            ui.tableWidget_queryadv_result.resizeColumnsToContents()
+            ui.tableWidget_queryadv_result.resizeRowsToContents()
     def logging(self, text):
         ui.plainTextEdit_log.appendPlainText(text)
 
@@ -367,6 +424,8 @@ if __name__ == "__main__":
     ui.pushButton_signup.clicked.connect(bot.moveSignup)
     ##회원가입 아이디 체크
     ui.pushButton_chk_btn.clicked.connect(bot.checkId)
+    ##회원가입 인증번호 발송
+
     ##회원가입 완료
     ui.pushButton_signup_comp.clicked.connect(bot.signup)
     ## 로그인
