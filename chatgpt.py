@@ -404,8 +404,8 @@ class Ui_ComputerScienceSecretNote(object):
         ComputerScienceSecretNote.setStatusBar(self.statusbar)
 
         self.retranslateUi(ComputerScienceSecretNote)
-        self.stackedWidget_main.setCurrentIndex(2)
-        self.tabWidget.setCurrentIndex(4)
+        self.stackedWidget_main.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(ComputerScienceSecretNote)
 
     def retranslateUi(self, ComputerScienceSecretNote):
