@@ -42,7 +42,7 @@ class gpt():
     def dbConnect(self):
         host = "my8002.gabiadb.com"
         user = "amsdb"
-        password = "manager123!@"
+        password = ""
         database = "amsdb"
 
         # 데이터베이스 연결
@@ -165,7 +165,7 @@ class gpt():
         smtp_server = 'smtp.gmail.com'  # 사용하는 메일
         smtp_port = 587
         sender_email = 'asdudgjs@knou.ac.kr'  # 본인의 이메일
-        sender_password = 'vuyhodtrxjkyzfzp'  # 본인의 이메일
+        sender_password = ''  # 본인의 이메일
         recipient = recipient+'@knou.ac.kr'
         msg = MIMEMultipart()
         msg['From'] = sender_email
