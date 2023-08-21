@@ -1,7 +1,5 @@
 from PyQt6 import QtCore, QtWidgets
 from PyQt6.QtCore import *
-from PyQt6.QtGui import QStandardItemModel
-
 import chatgpt
 import openai
 from PyQt6.QtWidgets import QPushButton, QMessageBox, QRadioButton, QTableWidgetItem
@@ -10,7 +8,6 @@ import json
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import string
 import random
 
 class gpt():
