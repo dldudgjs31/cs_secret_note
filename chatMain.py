@@ -507,7 +507,7 @@ class gpt():
         # db 테이블 리스트 정보 불러오는 쿼리
         connection = self.dbConnect_queryadv(host=self.db_host,user=self.db_user,pwd=self.db_pwd,database=self.db_database)
         result = self.dbSearch(
-            query=f"SHOW TABLES FROM amsdb where tables_in_amsdb like 'T%'",
+            query=f"SHOW TABLES FROM {self.db_database} where tables_in_{self.db_database} like 'T%'",
             connection=connection
         )
         tables = list()
@@ -571,7 +571,10 @@ class gpt():
 
         #step1) DB 스키마 정보 조회
         result = self.dbSearch(
-            query=f"SELECT table_name,column_name, data_type FROM information_schema.`COLUMNS` WHERE TABLE_SCHEMA = 'amsdb' and (TABLE_NAME  ='{ui.comboBox_query_table.currentText()}' or TABLE_NAME='{ui.comboBox_query_table_2.currentText()}')",
+            query=f"SELECT table_name,column_name, data_type "
+                  f"FROM information_schema.`COLUMNS` "
+                  f"WHERE TABLE_SCHEMA = '{self.db_database}' "
+                  f"and (TABLE_NAME  ='{ui.comboBox_query_table.currentText()}' or TABLE_NAME='{ui.comboBox_query_table_2.currentText()}')",
             connection=connection
         )
         print(result)
